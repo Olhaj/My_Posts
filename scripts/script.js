@@ -3,6 +3,7 @@ const prevPostBnt = document.querySelector(".left");
 const nextPostBnt = document.querySelector(".right");
 
 const BASE_URL = "https://jsonplaceholder.typicode.com";
+const MAX_POST_NUMBER = 100;
 
 // Получаем номер поста из localStorage
 // Если значения нет, используем 1
@@ -10,17 +11,51 @@ let postNumber = Number(localStorage.getItem("postNumber")) || 1;
 
 const getPostById = async () => {
   try {
+    // Проверяем номер поста перед отправкой запроса
+    if (
+      !Number.isInteger(postNumber) ||
+      postNumber < 1 ||
+      postNumber > MAX_POST_NUMBER
+    ) {
+      throw new Error("Некорректный номер поста");
+    }
+
     const response = await fetch(`${BASE_URL}/posts/${postNumber}`);
+
+    // Проверяем, успешно ли выполнен запрос
+    if (!response.ok) {
+      throw new Error(`Ошибка сервера: ${response.status}`);
+    }
+
     const data = await response.json();
+
+    // Проверяем полученные данные
+    if (
+      !data ||
+      !Number.isInteger(data.id) ||
+      typeof data.title !== "string" ||
+      typeof data.body !== "string"
+    ) {
+      throw new Error("Получены некорректные данные поста");
+    }
+
     return data;
   } catch (error) {
     console.log(error);
+    // Показываем сообщение об ошибке пользователю
+    postContainer.textContent = "Не удалось загрузить пост";
+    return null; // Возвращаем null в случае ошибки
   }
 };
 
 // getPostById(1);
 
 const renderPost = (post) => {
+  // Если данные не получены, ничего не отображаем
+  if (!post) {
+    return;
+  }
+
   postContainer.innerHTML = "";
 
   const title = document.createElement("p");
@@ -46,29 +81,27 @@ const loadPost = async () => {
   postContainer.textContent = "Loading...";
 
   const postData = await getPostById();
-  renderPost(postData);
+  // Отображаем пост только при успешном получении данных
+  if (postData) {
+    renderPost(postData);
 
-  // Сохраняем номер текущего поста
-  localStorage.setItem("postNumber", postNumber);
+    // Сохраняем номер поста
+    localStorage.setItem("postNumber", postNumber);
+  }
 };
 
 loadPost();
 
 nextPostBnt.addEventListener("click", () => {
-  postNumber++;
-
-  // Сохраняем новый номер поста
-  localStorage.setItem("postNumber", postNumber);
-
-  loadPost();
+  if (postNumber < MAX_POST_NUMBER) {
+    postNumber++;
+    loadPost();
+  }
 });
 
 prevPostBnt.addEventListener("click", () => {
   if (postNumber > 1) {
     postNumber--;
-
-    // Сохраняем новый номер поста
-    localStorage.setItem("postNumber", postNumber);
     loadPost();
   }
 });
