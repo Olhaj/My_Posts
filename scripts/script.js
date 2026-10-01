@@ -42,6 +42,9 @@ const renderPost = (post) => {
 // renderPost({ id: 1, title: "Post Title", body: "Post Body" });
 
 const loadPost = async () => {
+  // Показываем Loading перед запросом
+  postContainer.textContent = "Loading...";
+
   const postData = await getPostById();
   renderPost(postData);
 
@@ -70,4 +73,4 @@ prevPostBnt.addEventListener("click", () => {
   }
 });
 
-//1.localStorage 2.LocalStorage 3.Валидация 4. Debounce(350ms - 1 click)
+// 1.localStorage 2.Loading, 3.Валидация 4.Debounce (350ms - 1 click)
