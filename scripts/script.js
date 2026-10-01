@@ -90,20 +90,38 @@ const loadPost = async () => {
   }
 };
 
-loadPost();
+// Функция debounce
+const debounce = (callback, delay) => {
+  let timer;
 
-nextPostBnt.addEventListener("click", () => {
+  return (...args) => {
+    clearTimeout(timer);
+
+    timer = setTimeout(() => {
+      callback(...args);
+    }, delay);
+  };
+};
+
+// Обработчик кнопки следующего поста
+const handleNextPost = debounce(() => {
   if (postNumber < MAX_POST_NUMBER) {
     postNumber++;
     loadPost();
   }
-});
+}, 350);
 
-prevPostBnt.addEventListener("click", () => {
+// Обработчик кнопки предыдущего поста
+const handlePrevPost = debounce(() => {
   if (postNumber > 1) {
     postNumber--;
     loadPost();
   }
-});
+}, 350);
+
+loadPost();
+
+nextPostBnt.addEventListener("click", handleNextPost);
+prevPostBnt.addEventListener("click", handlePrevPost);
 
 // 1.localStorage 2.Loading, 3.Валидация 4.Debounce (350ms - 1 click)
